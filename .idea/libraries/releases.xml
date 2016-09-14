@@ -1,0 +1,22 @@
+<component name="libraryTable">
+  <library name="releases">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.02.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.51.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox-2.7.1.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.6.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.5.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.05.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.03.2.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.01.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.03.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.04.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox-2.7.0.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.03.1.zip!/" />
+      <root url="jar://$PROJECT_DIR$/WebContent/ui/rapido/assets/plugins/lightbox2/releases/lightbox2.03.3.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

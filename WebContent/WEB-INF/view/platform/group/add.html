@@ -1,0 +1,43 @@
+<div class="alert alert-success">
+	<a href="#" onclick="common_ajax.ajaxMainPanel('/jf/platform/index/content');">${i18nMap["admin.common.mainPage"]}</a>
+	>
+	<a href="#" onclick="common_ajax.ajaxMainPanel('/jf/platform/group');">分组管理</a>
+	>添加分组
+</div>
+
+<div class="row">
+	<div class="col-md-12" style="padding-left: 5px;">
+		<!-- start: BORDERED TABLE PANEL -->
+		<div class="panel panel-default">
+			
+			<div class="panel-heading">
+				<h4 class="panel-title"><span class="text-bold">分组信息</span></h4>
+				<div class="panel-tools">										
+					<% include("/common/panel-tools.html"){} %>
+				</div>
+			</div>
+			
+			<div class="panel-body">	
+				<form id="editForm" action="${cxt!}/jf/platform/group/save" method="POST" role="form" class="form-horizontal">
+					
+					<% include("/platform/group/form.html"){} %>
+					
+					<div class="form-group">
+						<div class="col-sm-2 col-sm-offset-2">
+							<% if(authUrl("/jf/platform/group/save")){ %>
+								<button type="button" class="btn btn-green" onclick="platform_verify.formValiSubmit(this.form);">
+									保  存	<i class="fa fa-save"></i>
+								</button>
+
+								<button type="button" class="btn btn-grey" onclick="common_ajax.ajaxMainPanel('/jf/platform/group');">
+									返  回	<i class="fa fa-mail-reply"></i>
+								</button>
+							<% } %>
+						</div>
+					</div>
+				</form>
+			</div>
+		
+		</div>
+	</div>
+</div>	

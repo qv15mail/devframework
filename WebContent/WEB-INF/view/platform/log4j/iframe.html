@@ -1,0 +1,26 @@
+<div class="alert alert-success">
+	<a href="#" onclick="common_ajax.ajaxMainPanel('/jf/platform/index/content');">${i18nMap["admin.common.mainPage"]}</a>
+	>在线日志
+</div>
+<div class="row">
+	<div class="col-md-12"  style="padding-left: 5px;">
+		<!-- start: BORDERED TABLE PANEL -->
+		<div class="panel panel-default">
+
+			<div class="panel-heading">
+				<h4 class="panel-title"><span class="text-bold">在线日志</span></h4>
+				<div class="panel-tools">
+					<% include("/common/panel-tools.html"){} %>
+				</div>
+			</div>
+
+			<div class="panel-body">
+				<iframe id="log4jIframe" name="log4jIframe" width="100%" height="1000px"
+						class="share_self" frameborder="0" scrolling="auto"
+						src='${cxt!}/jf/platform/index/toUrl?toUrl=/platform/log4j/log4j.html'>
+				</iframe>
+			</div>
+
+		</div>
+	</div>
+</div>

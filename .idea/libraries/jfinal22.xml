@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="jfinal22">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/jackson-core-2.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/freemarker-2.3.22.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/velocity-1.7-dep.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/jackson-annotations-2.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/velocity-1.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/jackson-databind-2.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build-lib/jfinal22/c3p0-0.9.1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

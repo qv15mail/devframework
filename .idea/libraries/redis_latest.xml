@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="redis-latest">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/doc/redis/redis-latest.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
