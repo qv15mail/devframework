@@ -1,5 +1,6 @@
 package com.platform.mvc.login;
 
+import com.platform.mvc.user.User;
 import org.apache.log4j.Logger;
 
 import com.jfinal.aop.Before;
@@ -8,7 +9,6 @@ import com.platform.constant.ConstantLogin;
 import com.platform.constant.ConstantWebContext;
 import com.platform.interceptor.AuthInterceptor;
 import com.platform.mvc.base.BaseController;
-import com.platform.mvc.user.User;
 import com.platform.tools.ToolWeb;
 import com.platform.tools.security.ToolIDEA;
 
@@ -130,6 +130,8 @@ public class LoginController extends BaseController {
 				
 				int result = loginService.login(getRequest(), getResponse(), username, password, autoLogin);
 				if(result == ConstantLogin.login_info_3){ // 登陆验证成功
+					//User user = User.cacheGet(username);
+					//setAttr("imgs", Upload.dao.findById(user.getPKValue()).getFilename());
 					redirect("/jf/platform/index");
 					return;
 				}

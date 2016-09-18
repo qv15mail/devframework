@@ -2,6 +2,7 @@ package com.platform.mvc.index;
 
 import java.util.List;
 
+import com.platform.mvc.upload.Upload;
 import org.apache.log4j.Logger;
 
 import com.platform.annotation.Controller;
@@ -38,6 +39,8 @@ public class IndexController extends BaseController {
 				ids = "8a40c0353fa828a6013fa898d4ac0020";
 			}
 			menuList = indexService.menu(ids, user, geti18nColumnSuffix());
+			Upload upload = Upload.dao.findById(user.getPKValue());
+			setAttr("upload", upload);
 			render("/platform/index/index.html");
 		}else{
 			render("/platform/login/login.html");

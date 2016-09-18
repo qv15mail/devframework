@@ -1,11 +1,11 @@
 package com.platform.plugin;
 
+import javax.sql.DataSource;
+
 import com.jfinal.plugin.IPlugin;
 import com.jfinal.plugin.activerecord.IDataSourceProvider;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
-import javax.sql.DataSource;
 
 /**
  * The HikariCP datasource plugin.

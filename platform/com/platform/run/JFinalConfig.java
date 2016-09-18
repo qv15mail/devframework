@@ -1,5 +1,7 @@
 package com.platform.run;
 
+import com.jfinal.ext.interceptor.SessionInViewInterceptor;
+import com.platform.plugin.*;
 import org.apache.log4j.Logger;
 import org.beetl.ext.jfinal.BeetlRenderFactory;
 
@@ -35,13 +37,6 @@ import com.platform.dto.DataBase;
 import com.platform.handler.GlobalHandler;
 import com.platform.interceptor.AuthInterceptor;
 import com.platform.interceptor.ParamPkgInterceptor;
-import com.platform.plugin.ControllerPlugin;
-import com.platform.plugin.FileRenamePlugin;
-import com.platform.plugin.I18NPlugin;
-import com.platform.plugin.ParamInitPlugin;
-import com.platform.plugin.ServicePlugin;
-import com.platform.plugin.SqlXmlPlugin;
-import com.platform.plugin.TableScan;
 import com.platform.thread.DataClear;
 import com.platform.thread.ThreadSysLog;
 import com.platform.thread.TimerResources;
@@ -76,8 +71,8 @@ public class JFinalConfig extends com.jfinal.config.JFinalConfig {
 		//constants.setJsonFactory(JacksonFactory.me()); // Jackson
 
 		log.info("configConstant 设置path相关");
-		constants.setBaseUploadPath(PathKit.getWebRootPath() + "/files"); // 上传公共路径
-		constants.setBaseDownloadPath(PathKit.getWebRootPath() + "/files"); // 下载公共路径
+		constants.setBaseUploadPath(PathKit.getWebRootPath()); // 上传公共路径 + File.separator + "files"
+		constants.setBaseDownloadPath(PathKit.getWebRootPath()); // 下载公共路径 + File.separator + "files"
 		//constants.setBaseViewPath("/jf"); //设置路由公共路径
 		
 		log.info("configConstant 视图Beetl设置");
@@ -197,6 +192,9 @@ public class JFinalConfig extends com.jfinal.config.JFinalConfig {
 		
 		log.info("afterJFinalStart 配置文件上传命名策略插件");
 		plugins.add(new FileRenamePlugin());
+
+		log.info("加载自动任务cron4j");
+		plugins.add(new Cron4jPlugin(PropKit.use("task.properties")));
 	}
 
 	/**
@@ -220,6 +218,7 @@ public class JFinalConfig extends com.jfinal.config.JFinalConfig {
 
 		log.info("configInterceptor i18n拦截器");
 		interceptors.add(new I18nInterceptor());
+		//interceptors.add(new SessionInViewInterceptor());
 	}
 	
 	/**

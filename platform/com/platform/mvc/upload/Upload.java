@@ -6,6 +6,8 @@ import com.platform.annotation.Table;
 import com.platform.constant.ConstantInit;
 import com.platform.mvc.base.BaseModel;
 
+import java.util.Map;
+
 /**
  * 上传文件model
  * @author 董华健
@@ -123,5 +125,7 @@ public class Upload extends BaseModel<Upload> {
 	public String getPath() {
 		return get(column_path);
 	}
-	
+	public Map<String, Object> getAttrs(){
+		return super.getAttrs();
+	}
 }

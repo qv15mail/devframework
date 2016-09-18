@@ -95,6 +95,19 @@
 </div>
 
 <div class="form-group">
+	<label class="col-sm-2 control-label">头像：</label>
+	<div class="col-sm-5">
+		<% if(!isEmpty(upload)){%>
+		<img alt="头像" src="${cxt!}/files/upload/${upload.filename!}" width="200" height="200">
+		<% } %>
+		<input type="file" class="span8" name="logo" value=""
+			   maxlength="1000" vMin="0" placeholder="选择jpg、jpeg、png类型图片">
+		<span class="help-inline"></span>
+	</div>
+</div>
+
+
+<div class="form-group">
 	<label class="col-sm-2 control-label">手机：</label>
 	<div class="col-sm-7">
 		<input type="text" id="mobileId" name="user.mobile" value="${escapeXml(user.mobile!)}"

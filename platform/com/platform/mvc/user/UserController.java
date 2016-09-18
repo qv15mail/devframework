@@ -1,6 +1,7 @@
 package com.platform.mvc.user;
 
 import com.jfinal.aop.Before;
+import com.jfinal.upload.UploadFile;
 import com.platform.annotation.Controller;
 import com.platform.dto.ZtreeNode;
 import com.platform.mvc.base.BaseController;
@@ -9,8 +10,10 @@ import com.platform.mvc.station.Station;
 import com.platform.mvc.upload.Upload;
 import com.platform.mvc.upload.UploadService;
 import com.platform.tools.ToolRandoms;
+import com.platform.tools.ToolString;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -40,8 +43,8 @@ public class UserController extends BaseController {
 	public void save() {
 		String ids = ToolRandoms.getUuid(true);
 		
-		//List<UploadFile> files = getFiles("files" + File.separator + "upload", 1 * 1024 * 1024, ToolString.encoding); // 1M
-		//uploadService.upload("webRoot", files.get(0), ids);
+		List<UploadFile> files = getFiles("files" + File.separator + "upload", 1 * 1024 * 1024, ToolString.encoding); // 1M
+		uploadService.upload("webRoot", files.get(0), ids);
 
 		String password = getPara("password");
 		User user = getModel(User.class);
@@ -70,19 +73,19 @@ public class UserController extends BaseController {
 	 */
 	@Before(UserValidator.class)
 	public void update() {
-		//List<UploadFile> files = getFiles("files" + File.separator + "upload", 1 * 1024 * 1024, ToolString.encoding); // 1M
+		List<UploadFile> files = getFiles("files" + File.separator + "upload", 5 * 1024 * 1024, ToolString.encoding); // 1M
 
 		String password = getPara("password");
 		User user = getModel(User.class);
 		UserInfo userInfo = getModel(UserInfo.class);
 		
-//		if(files != null && files.size() == 1){
-//			// 删除旧LOGO
-//			Upload.dao.deleteById(user.getPKValue());
-//
-//			// 存入新LOGO
-//			uploadService.upload("webRoot", files.get(0), user.getPKValue());
-//		}
+		if(files != null && files.size() == 1){
+			// 删除旧LOGO
+			Upload.dao.deleteById(user.getPKValue());
+
+			// 存入新LOGO
+			uploadService.upload("webRoot", files.get(0), user.getPKValue());
+		}
 		
 		userService.update(user, password, userInfo);
 		redirect("/jf/platform/user");

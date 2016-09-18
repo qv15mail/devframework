@@ -20,7 +20,7 @@ public class UploadService extends BaseService {
 	public static final String serviceName = "uploadService";
 
 	/**
-	 * ¶àÎÄ¼şÉÏ´«´¦Àí
+	 * å¤šæ–‡ä»¶ä¸Šä¼ å¤„ç†
 	 * @param pathType
 	 * @param files
 	 * @return
@@ -51,7 +51,7 @@ public class UploadService extends BaseService {
 	}
 
 	/**
-	 * µ¥ÎÄ¼şÉÏ´«´¦Àí
+	 * å•æ–‡ä»¶ä¸Šä¼ å¤„ç†
 	 * @param pathType
 	 * @param uploadFile
 	 * @param ids
