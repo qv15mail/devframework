@@ -1,5 +1,6 @@
 package com.platform.mvc.usergroup;
 
+import com.platform.mvc.user.User;
 import org.apache.log4j.Logger;
 
 import com.jfinal.kit.Ret;
@@ -10,7 +11,7 @@ import com.platform.mvc.base.BaseController;
  * 用户分组 管理	
  * 描述：
  */
-@Controller(controllerKey = "/jf/platform/userGroup")
+@Controller("/jf/platform/userGroup")
 public class UserGroupController extends BaseController {
 
 	@SuppressWarnings("unused")
@@ -33,6 +34,9 @@ public class UserGroupController extends BaseController {
 	public void addGroup(){
 		String groupIds = getPara("groupIds");
 		userGroupService.addGroup(ids, groupIds);
+		//第一次添加用户时并没有用户组，在重新指定用户组时要删除缓存重新建立
+		User.cacheRemove(ids);
+		User.cacheAdd(ids);
 		renderText(ids);
 	}
 	
@@ -41,6 +45,9 @@ public class UserGroupController extends BaseController {
 	 */
 	public void delGroup(){
 		userGroupService.delGroup(ids);
+		//第一次添加用户时并没有用户组，在重新指定用户组时要删除缓存重新建立
+		User.cacheRemove(ids);
+		User.cacheAdd(ids);
 		renderText(ids);
 	}
 	

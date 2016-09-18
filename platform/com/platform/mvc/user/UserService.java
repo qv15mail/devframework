@@ -1,14 +1,5 @@
 package com.platform.mvc.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.platform.annotation.Service;
@@ -16,6 +7,15 @@ import com.platform.dto.ZtreeNode;
 import com.platform.mvc.base.BaseService;
 import com.platform.mvc.dept.Department;
 import com.platform.tools.security.ToolPbkdf2;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.Logger;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service(name = UserService.serviceName)
 public class UserService extends BaseService {
@@ -26,30 +26,30 @@ public class UserService extends BaseService {
 
 	/**
 	 * 新增用户信息保存
+	 * @param pkIds
 	 * @param user
-	 * @param passWord
+	 * @param password
 	 * @param userInfo
 	 */
 	@Before(Tx.class)
-	public void save(User user, String password, UserInfo userInfo) {
+	public void save(String pkIds, User user, String password, UserInfo userInfo) {
 		try {
 			// 密码加密
 			byte[] salt = ToolPbkdf2.generateSalt();// 密码盐
 			byte[] encryptedPassword = ToolPbkdf2.getEncryptedPassword(password, salt);
-			user.set(User.column_salt, salt);
-			user.set(User.column_password, encryptedPassword);
-
-			// 保存用户信息
-			userInfo.save();
+			user.set(User.column_salt, Base64.encodeBase64String(salt));
+			user.set(User.column_password, Base64.encodeBase64String(encryptedPassword));
 
 			// 保存用户
-			user.set(User.column_userinfoids, userInfo.getPKValue());
 			user.set(User.column_errorcount, 0);
 			user.set(User.column_status, "1");
-			user.save();
+			user.save(pkIds);
+
+			// 保存用户扩展信息
+			userInfo.save(pkIds);
 
 			// 缓存
-			User.dao.cacheAdd(user.getPKValue());
+			User.cacheAdd(user.getPKValue());
 		} catch (NoSuchAlgorithmException  | InvalidKeySpecException e) {
 			throw new RuntimeException("保存用户密码加密操作异常", e);
 		} catch (Exception e) {
@@ -60,7 +60,7 @@ public class UserService extends BaseService {
 	/**
 	 * 更新用户信息
 	 * @param user
-	 * @param passWord
+	 * @param password
 	 * @param userInfo
 	 */
 	@Before(Tx.class)
@@ -69,17 +69,20 @@ public class UserService extends BaseService {
 			// 密码加密
 			if (null != password && !password.trim().equals("")) {
 				User oldUser = User.dao.findById(user.getPKValue());
-				byte[] salt = oldUser.getBytes(User.column_salt);// 密码盐
+				String saltStr = oldUser.getSalt();// 密码盐
+				byte[] salt = Base64.decodeBase64(saltStr);
 				byte[] encryptedPassword = ToolPbkdf2.getEncryptedPassword(password, salt);
-				user.set(User.column_password, encryptedPassword);
+				user.set(User.column_password, Base64.encodeBase64String(encryptedPassword));
 			}
 
 			// 更新用户
 			user.update();
+
+			// 更新用户扩展信息
 			userInfo.update();
 
 			// 缓存
-			User.dao.cacheAdd(user.getPKValue());
+			User.cacheAdd(user.getPKValue());
 		} catch (Exception e) {
 			throw new RuntimeException("更新用户异常", e);
 		}
@@ -93,30 +96,13 @@ public class UserService extends BaseService {
 	public void delete(String ids) {
 		String[] idsArr = splitByComma(ids);
 		for (String userIds : idsArr) {
-			User user = User.dao.findById(userIds);
-			String userInfoIds = user.getStr(User.column_userinfoids);
-
 			// 缓存
-			User.dao.cacheRemove(userIds);
+			User.cacheRemove(userIds);
 
 			// 删除
 			User.dao.deleteById(userIds);
-			UserInfo.dao.deleteById(userInfoIds);
+			UserInfo.dao.deleteById(userIds);
 		}
-	}
-
-	/**
-	 * 设置用户所在的组
-	 * 
-	 * @param userIds
-	 * @param groupIds
-	 */
-	public void setGroup(String userIds, String groupIds) {
-		User user = User.dao.findById(userIds);
-		user.set(User.column_groupids, groupIds).update();
-
-		// 缓存
-		User.dao.cacheAdd(userIds);
 	}
 
 	/**
@@ -153,7 +139,7 @@ public class UserService extends BaseService {
 				node.setId("user_" + user.getPKValue());
 				node.setName(user.getStr("names"));
 				node.setIsParent(false);
-				node.setIcon(cxt + "/jsFile/zTree/css/zTreeStyle/img/diy/5.png");
+				node.setIcon(cxt + "/jsfile/ztree/css/zTreeStyle/img/diy/5.png");
 				nodeList.add(node);
 			}
 		}
@@ -169,7 +155,7 @@ public class UserService extends BaseService {
 			} else {
 				node.setIsParent(Boolean.parseBoolean(dept.getStr(Department.column_isparent)));
 			}
-			node.setIcon(cxt + "/jsFile/zTree/css/zTreeStyle/img/diy/" + dept.getStr(Department.column_images));
+			node.setIcon(cxt + "/jsfile/ztree/css/zTreeStyle/img/diy/" + dept.getStr(Department.column_images));
 			nodeList.add(node);
 		}
 
@@ -188,7 +174,8 @@ public class UserService extends BaseService {
 			param.put("column", User.column_username);
 			String sql = getSqlByBeetl(User.sqlId_column, param);
 			User user = User.dao.findFirst(sql, userName);
-			byte[] salt = user.getBytes(User.column_salt);// 密码盐
+			String saltStr = user.getSalt();// 密码盐
+			byte[] salt = Base64.decodeBase64(saltStr);
 			byte[] encryptedPassword = user.getBytes(User.column_password);
 			boolean bool = ToolPbkdf2.authenticate(passWord, encryptedPassword, salt);
 			if (bool) {
@@ -215,8 +202,10 @@ public class UserService extends BaseService {
 			User user = User.dao.findFirst(sql, userName);
 			
 			// 验证密码
-			byte[] salt = user.getBytes(User.column_salt);// 密码盐
-			byte[] encryptedPassword = user.getBytes(User.column_password);
+			String saltStr = user.getSalt();			// 密码盐
+			byte[] salt = Base64.decodeBase64(saltStr);
+			String passStr = user.getPassword();		// 密码
+			byte[] encryptedPassword = Base64.decodeBase64(passStr);
 			boolean bool = false;
 			try {
 				bool = ToolPbkdf2.authenticate(passOld, encryptedPassword, salt);
@@ -228,12 +217,12 @@ public class UserService extends BaseService {
 			if (bool) {
 				byte[] saltNew = ToolPbkdf2.generateSalt();// 密码盐
 				byte[] encryptedPasswordNew = ToolPbkdf2.getEncryptedPassword(passNew, saltNew);
-				user.set(User.column_salt, saltNew);
-				user.set(User.column_password, encryptedPasswordNew);
+				user.set(User.column_salt, Base64.encodeBase64String(saltNew));
+				user.set(User.column_password, Base64.encodeBase64String(encryptedPasswordNew));
 				// 更新用户
 				user.update();
 				// 缓存
-				User.dao.cacheAdd(user.getPKValue());
+				User.cacheAdd(user.getPKValue());
 			}
 		} catch (Exception e) {
 			log.error("更新用户密码异常，userName:" + userName + "，旧密码：" + passOld + "，新密码：" + passNew, e);

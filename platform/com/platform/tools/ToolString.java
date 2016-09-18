@@ -208,10 +208,16 @@ public abstract class ToolString {
 	 * @return String 编码数据
 	 * @throws Exception
 	 */
-	public static String encode(String data) throws Exception {
+	public static String encode(String data) {
+		String str = null;
+		try {
 		// 执行编码
 		byte[] b = Base64.encodeBase64URLSafe(data.getBytes(encoding));
-		return new String(b, encoding);
+			str = new String(b, encoding);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return str;
 	}
 
 	/**
@@ -222,10 +228,17 @@ public abstract class ToolString {
 	 * @return String 解码数据
 	 * @throws Exception
 	 */
-	public static String decode(String data) throws Exception {
+	public static String decode(String data) {
+		String str = null;
+		try {
 		// 执行解码
 		byte[] b = Base64.decodeBase64(data.getBytes(encoding));
-		return new String(b, encoding);
+			str = new String(b, encoding);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return str;
 	}
 
 	/**
@@ -303,20 +316,7 @@ public abstract class ToolString {
 	        //System.out.println(str);
 	        html.append(contents.substring(lastIdx, matchr.start()));
 	         
-	        User user = null;
-			Object userObj = User.dao.cacheGet(userName);
-			if (null != userObj) {
-				user = (User) userObj;
-			} else {
-				Map<String, Object> param = new HashMap<String, Object>();
-				param.put("column", "username");
-				String sql = ToolSqlXml.getSql(User.sqlId_column, param, ConstantRender.sql_renderType_beetl);
-				List<User> userList = User.dao.find(sql, userName);
-				if (userList.size() == 1) {
-					user = userList.get(0);
-				}
-			}
-	        
+	        User user = User.cacheGet(userName);
 	        if(user != null){
 	            html.append("<a href='http://www.xx.com/"+user.getStr("username")+"' class='referer' target='_blank'>@");
 	            html.append(userName.trim());
@@ -325,6 +325,7 @@ public abstract class ToolString {
 	            	userReferers.add(user.getPKValue());
 	            }
 	        } else {
+	        	log.error("用户不存在 userName = " + userName);
 	            html.append(origion_str);
 	        }
 	        lastIdx = matchr.end();

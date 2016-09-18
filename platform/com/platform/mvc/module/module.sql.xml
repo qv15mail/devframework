@@ -12,11 +12,17 @@
     	]]>
 	</sql>
 	
-	<!-- 根节点 -->
-	<sql id="root">
-		<![CDATA[ 
-        	select pm.ids, (select ps.names from pt_systems ps where ps.ids = pm.systemsIds) as names, pm.isParent, pm.images 
+	<!-- 根节点
+        	select pm.ids, (select ps.names from pt_systems ps where ps.ids = pm.systemsIds) as names, pm.isParent, pm.images
         	from pt_module pm where pm.parentModuleIds is null order by pm.orderIds asc
+	-->
+	<sql id="root">
+		<![CDATA[
+			select pm.ids, ps.names, pm.isParent, pm.images
+			from pt_module pm,pt_systems ps
+			where ps.ids = pm.systemsIds and  ps.names is not null and pm.parentModuleIds is null
+			order by pm.orderIds asc
+
     	]]>
 	</sql>
 	

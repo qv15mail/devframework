@@ -1,13 +1,5 @@
 package com.platform.interceptor;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.platform.constant.ConstantWebContext;
@@ -20,6 +12,13 @@ import com.platform.plugin.I18NPlugin;
 import com.platform.plugin.ServicePlugin;
 import com.platform.tools.ToolDateTime;
 import com.platform.tools.ToolString;
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 参数封装拦截器
@@ -60,9 +59,15 @@ public class ParamPkgInterceptor implements Interceptor {
 		
 		// 是否需要分页
 		String operatorIds = controller.getReqSysLog().getStr(Syslog.column_operatorids);
-		String splitpage = Operator.dao.cacheGet(operatorIds).getStr(Operator.column_splitpage);
+		String splitpage = Operator.cacheGet(operatorIds).getStr(Operator.column_splitpage);
 		if(splitpage.equals("1")){
-			splitPage(controller);
+			String uri = invoc.getActionKey(); // 默认就是ActionKey
+			String urlPara = controller.getUrlPara();
+			if(urlPara != null && !urlPara.isEmpty()){
+				uri += "/" + urlPara;
+				controller.setAttr("urlPara", urlPara + "/" + urlPara); // 设置urlPara到request
+			}
+			splitPage(controller, uri);
 		}
 		
 		log.debug("********* 封装参数值到 controller 全局变量  end *********");
@@ -71,7 +76,7 @@ public class ParamPkgInterceptor implements Interceptor {
 		
 		log.debug("********* 设置全局变量值到 request start *********");
 
-		// 封装Controller至父类baseController变量值
+		// 封装Controller至父类baseController变量值request
 		controllerClass = controller.getClass();
 		while (true) {
 			Field[] fields = controllerClass.getDeclaredFields();
@@ -94,13 +99,21 @@ public class ParamPkgInterceptor implements Interceptor {
 	 * 分页参数处理
 	 * @param controller
 	 */
-	private void splitPage(BaseController controller){
+	private void splitPage(BaseController controller, String uri){
 		SplitPage splitPage = new SplitPage();
-		// 分页查询参数分拣
+		
+		// 设置分页请求uri
+		splitPage.setUri(uri);
+		
+		// 存储分页查询参数
 		Map<String, Object> queryParam = new HashMap<String, Object>();
+		
+		// 国际化相关参数
 		String localePram = controller.getAttr(ConstantWebContext.request_localePram);
 		queryParam.put(ConstantWebContext.request_localePram, localePram); // 设置国际化当前语言环境
 		queryParam.put(ConstantWebContext.request_i18nColumnSuffix, I18NPlugin.columnSuffix(localePram)); // 设置国际化动态列后缀
+		
+		// 分拣请求参数
 		Enumeration<String> paramNames = controller.getParaNames();
 		String name = null;
 		String value = null;
@@ -108,7 +121,8 @@ public class ParamPkgInterceptor implements Interceptor {
 		while (paramNames.hasMoreElements()) {
 			name = paramNames.nextElement();
 			value = controller.getPara(name);
-			if (name.startsWith(ConstantWebContext.request_query) && null != value && !value.trim().isEmpty()) {// 查询参数分拣
+			// 是否以_query.开头
+			if (name.startsWith(ConstantWebContext.request_query) && null != value && !value.trim().isEmpty()) {
 				log.debug("分页，查询参数：name = " + name + " value = " + value);
 				key = name.substring(7);
 				if(ToolString.regExpVali(key, ToolString.regExp_letter_5)){
@@ -120,25 +134,29 @@ public class ParamPkgInterceptor implements Interceptor {
 		}
 		splitPage.setQueryParam(queryParam);
 		
-		String orderColunm = controller.getPara(ConstantWebContext.request_orderColunm);// 排序条件
+		// 排序条件
+		String orderColunm = controller.getPara(ConstantWebContext.request_orderColunm);
 		if(null != orderColunm && !orderColunm.isEmpty()){
 			log.debug("分页，排序条件：orderColunm = " + orderColunm);
 			splitPage.setOrderColunm(orderColunm);
 		}
 
-		String orderMode = controller.getPara(ConstantWebContext.request_orderMode);// 排序方式
+		// 排序方式
+		String orderMode = controller.getPara(ConstantWebContext.request_orderMode);
 		if(null != orderMode && !orderMode.isEmpty()){
 			log.debug("分页，排序方式：orderMode = " + orderMode);
 			splitPage.setOrderMode(orderMode);
 		}
 
-		String pageNumber = controller.getPara(ConstantWebContext.request_pageNumber);// 第几页
+		// 第几页
+		String pageNumber = controller.getPara(ConstantWebContext.request_pageNumber);
 		if(null != pageNumber && !pageNumber.isEmpty()){
 			log.debug("分页，第几页：pageNumber = " + pageNumber);
 			splitPage.setPageNumber(Integer.parseInt(pageNumber));
 		}
 		
-		String pageSize = controller.getPara(ConstantWebContext.request_pageSize);// 每页显示几多
+		// 每页显示几多
+		String pageSize = controller.getPara(ConstantWebContext.request_pageSize);
 		if(null != pageSize && !pageSize.isEmpty()){
 			log.debug("分页，每页显示几多：pageSize = " + pageSize);
 			splitPage.setPageSize(Integer.parseInt(pageSize));

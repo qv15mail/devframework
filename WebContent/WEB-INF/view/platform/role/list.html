@@ -61,10 +61,10 @@
 									<input type="checkbox" name="checkAll" onchange="common_common.checkFunc('dataTable', this.checked);" class="flat-grey selectall"> 
 								</th>
 								<th class="hidden-xs" onclick="common_splitPage.orderbyFun('mainPanel', 'splitPage', 'numbers')">
-									${i18nMap["admin.role.property.numbers"]}	${orderBy("numbers")}
+									角色编号	${orderBy("numbers")}
 								</th>
 								<th class="hidden-xs" onclick="common_splitPage.orderbyFun('mainPanel', 'splitPage', 'names')">
-									${i18nMap["admin.role.property.name"]}	${orderBy("names")}
+									角色名称	${orderBy("names")}
 								</th>
 								<th class="hidden-xs">
 									${i18nMap["admin.common.operation"]}
@@ -77,7 +77,10 @@
 									<td class="center hidden-xs">
 										<input type="checkbox" name="checkIds" value="${role.ids!}" class="flat-grey foocheck">
 									</td>
-									<td><span class="label label-sm label-success">${escapeXml(role["numbers"]!)}</span></td>
+									<!--
+									<td><span class="label label-sm label-info">${escapeXml(role["numbers"]!)}</span></td>
+									-->
+									<td>${escapeXml(role["numbers"]!)}</td>
 									<td>${escapeXml(role["names"]!)}</td>
 									<td class="hidden-xs">
 										<% if(edit == true && role["numbers"]! != "SuperAdmin"){ %>
@@ -87,17 +90,17 @@
 										<% } %>
 										
 										<% if(operator == true){ %>
-											<button type="button" class="btn btn-small btn-success" onclick="common_ajax.ajaxMainPanel('/jf/platform/roleOperator?_query.roleIds=${escapeXml(role.ids!)}');">
-												<i class="icon-ok icon-white"></i>
-												功能
+											<button type="button" class="btn btn-small btn-info"
+													onclick="common_ajax.ajaxMainPanel('/jf/platform/roleOperator?_query.roleIds=${escapeXml(role.ids!)}');">
+												功能<i class="fa fa-leaf"></i>
 											</button>
-
-                                        <a href="#" data-toggle="modal" class="ajaxDialog btn btn-purple add-row"
-                                            data-url="/jf/platform/operator/toUrl"
-                                            data-param='{ "toUrl" : "/platform/role/operatorTree.html", "ids" : "${role.ids!}"}'>
-                                            ${i18nMap["admin.role.list.table.operator"]} <i class="fa fa-leaf"></i>
-                                        </a>
-
+											<!--
+											<a href="#" data-toggle="modal" class="ajaxDialog btn btn-purple add-row"
+												data-url="/jf/platform/operator/toUrl"
+												data-param='{ "toUrl" : "/platform/role/operatorTree.html", "ids" : "${role.ids!}"}'>
+												功 能2 <i class="fa fa-leaf"></i>
+											</a>
+											-->
 										<% } %>
 										
 										<% if(delete == true && role["numbers"]! != "SuperAdmin"){ %>
@@ -112,7 +115,7 @@
 					</table>
 					
 					<div class="row" id="splitPageDiv">
-						<% include("/common/splitPage.html", {"divId" : "mainPanel", "formId" : "splitPage", "splitPageDiv" : "splitPageDiv"}){} %>
+						<% include("/platform/common/splitPage.html", {"divId" : "mainPanel", "formId" : "splitPage", "splitPageDiv" : "splitPageDiv"}){} %>
 					</div>
 					
 				</div>

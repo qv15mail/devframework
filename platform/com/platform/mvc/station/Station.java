@@ -3,7 +3,7 @@ package com.platform.mvc.station;
 import org.apache.log4j.Logger;
 
 import com.platform.annotation.Table;
-import com.platform.mvc.base.BaseModelCache;
+import com.platform.mvc.base.BaseModel;
 import com.platform.mvc.user.UserInfo;
 import com.platform.plugin.ParamInitPlugin;
 import com.platform.tools.ToolCache;
@@ -13,8 +13,8 @@ import com.platform.tools.ToolCache;
  * @author 董华健
  */
 @SuppressWarnings("unused")
-@Table(tableName = "pt_station")
-public class Station extends BaseModelCache<Station> {
+@Table(tableName = Station.table_name)
+public class Station extends BaseModel<Station> {
 
 	private static final long serialVersionUID = 6761767368352810428L;
 
@@ -22,6 +22,11 @@ public class Station extends BaseModelCache<Station> {
 	
 	public static final Station dao = new Station();
 
+	/**
+	 * 表名称
+	 */
+	public static final String table_name = "pt_station";
+	
 	/**
 	 * 字段描述：主键 
 	 * 字段类型：character varying  长度：32
@@ -71,18 +76,6 @@ public class Station extends BaseModelCache<Station> {
 	public static final String column_parentstationids = "parentstationids";
 	
 	/**
-	 * 字段描述：拥有的功能ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_operatorids = "operatorids";
-	
-	/**
-	 * 字段描述：拥有的功能模块ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_moduleids = "moduleids";
-	
-	/**
 	 * sqlId : platform.station.paging
 	 * 描述：查询所有岗位
 	 */
@@ -114,8 +107,6 @@ public class Station extends BaseModelCache<Station> {
 	private String names;
 	private Long orderids;
 	private String parentstationids;
-	private String operatorids;
-	private String moduleids;
 	
 	public void setIds(String ids){
 		set(column_ids, ids);
@@ -164,46 +155,6 @@ public class Station extends BaseModelCache<Station> {
 	}
 	public String getParentstationids() {
 		return get(column_parentstationids);
-	}
-	public void setOperatorids(String operatorids){
-		set(column_operatorids, operatorids);
-	}
-	public String getOperatorids() {
-		return get(column_operatorids);
-	}
-	public void setModuleids(String moduleids){
-		set(column_moduleids, moduleids);
-	}
-	public String getModuleids() {
-		return get(column_moduleids);
-	}
-	
-	/**
-	 * 添加或者更新缓存
-	 */
-	public void cacheAdd(String ids){
-		ToolCache.set(ParamInitPlugin.cacheStart_station + ids, Station.dao.findById(ids));
-	}
-
-	/**
-	 * 删除缓存
-	 */
-	public void cacheRemove(String ids){
-		ToolCache.remove(ParamInitPlugin.cacheStart_station + ids);
-	}
-
-	/**
-	 * 获取缓存
-	 * @param ids
-	 * @return
-	 */
-	public Station cacheGet(String ids){
-		Station station = ToolCache.get(ParamInitPlugin.cacheStart_station + ids);
-		if(station == null){
-			station = Station.dao.findById(ids);
-			cacheAdd(ids);
-		}
-		return station;
 	}
 	
 }

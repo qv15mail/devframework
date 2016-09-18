@@ -12,7 +12,7 @@ import com.platform.mvc.base.BaseModel;
  * 系统管理
  * @author 董华健
  */
-@Controller(controllerKey = "/jf/platform/systems")
+@Controller("/jf/platform/systems")
 public class SystemsController extends BaseController {
 
 	@SuppressWarnings("unused")

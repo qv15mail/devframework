@@ -1,10 +1,10 @@
 package com.platform.dto;
 
+import com.platform.constant.ConstantSplitPage;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import com.platform.constant.ConstantSplitPage;
 
 /**
  * 分页封装
@@ -25,61 +25,117 @@ public class SplitPage implements Serializable {
 	private int pageSize = ConstantSplitPage.default_pageSize;// 每页显示几多
 
 	/**
-	 * 分页结果住数据
+	 * 分页结果数据
 	 */
 	private List<?> list; // 当前页数据
 	private int totalPage; // 总页数
 	private int totalRow; // 总行数
-
-	/**
-	 * 分页返回扩展数据
-	 */
 	private Object extData; // 返回扩展数据
 	
 	/**
 	 * 分页显示辅助属性
 	 */
-	private int currentPageCount;// 当前页记录数量
-	private boolean isFirst;// 是否第一页
-	private boolean isLast;// 是否最后一页
+	private int currentPageCount = -1;// 当前页记录数量
+	private int startRow; // 当前页面第一个元素在数据库中的行号
+	private int endRow; // 当前页面最后一个元素在数据库中的行号
+	
+	private boolean isFirst = false;// 是否第一页
+	private boolean isLast = false;// 是否最后一页
+    private boolean hasPreviousPage = false;//是否有前一页
+    private boolean hasNextPage = false;//是否有下一页
+	
+	private String uri;// 分页uri
 
 	/**
 	 * 分页计算
 	 */
 	public void compute() {
-		if(totalRow == 0){
-			getTotalPage();
+		// 根据总记录数计算分页数
+		if ((this.totalRow % this.pageSize) == 0) {
+			this.totalPage = this.totalRow / this.pageSize;// 计算多少页
+		} else {
+			this.totalPage = this.totalRow / this.pageSize + 1;// 计算多少页
 		}
 		
-		if(pageNumber > totalPage){
+		// 用户请求的分页页码不能大于总页数
+		if (pageNumber > totalPage) {
 			pageNumber = totalPage;
 		}
 		
-		this.currentPageCount = (null != this.list ? this.list.size() : 0);// 当前页记录数
+		// 当前页记录数
+		this.currentPageCount = (null != this.list ? this.list.size() : 0);
 
+		// 是否第一页
 		if (pageNumber == 1) {
 			this.isFirst = true;
 		} else {
 			this.isFirst = false;
 		}
 
+		// 是否最后一页
 		if (pageNumber == totalPage) {
 			this.isLast = true;
 		} else {
 			this.isLast = false;
 		}
+		
+		//是否有前一页
+		if (pageNumber == 1 || totalPage == 0) {
+			this.hasPreviousPage = false;
+		}else{
+			this.hasPreviousPage = true;
+		}
+		
+		//是否有下一页
+		if (pageNumber == totalPage || totalPage == 0) {
+			this.hasNextPage = false;
+		}else{
+			this.hasNextPage = true;
+		}
+
+		// 起止行号
+		startRow = 1;
+		endRow = currentPageCount;
+		if (pageNumber != 1) {
+			startRow = (pageNumber - 1) * pageSize + 1;
+			endRow = startRow + currentPageCount - 1;
+		}
 	}
 
 	/**
-	 * 计算总页数
+	 * 用户请求的页码
 	 * @return
 	 */
-	public int getTotalPage() {
-		if ((this.totalRow % this.pageSize) == 0) {
-			this.totalPage = this.totalRow / this.pageSize;// 计算多少页
-		} else {
-			this.totalPage = this.totalRow / this.pageSize + 1;// 计算多少页
+	public int getPageNumber() {
+		if (pageNumber <= 0) {
+			pageNumber = ConstantSplitPage.default_pageNumber;
 		}
+		return pageNumber;
+	}
+
+	public void setPageNumber(int pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+
+	/**
+	 * 每页显示多少条数据
+	 * @return
+	 */
+	public int getPageSize() {
+		if (pageSize <= 0) {
+			pageSize = ConstantSplitPage.default_pageSize;
+		}
+		if (pageSize > ConstantSplitPage.default_maxSize) {
+			pageSize = ConstantSplitPage.default_pageSize;
+		}
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	public int getTotalPage() {
 		return totalPage;
 	}
 
@@ -127,39 +183,6 @@ public class SplitPage implements Serializable {
 		this.orderMode = orderMode;
 	}
 
-	/**
-	 * 需要查询显示第几页
-	 * @return
-	 */
-	public int getPageNumber() {
-		if (pageNumber <= 0) {
-			pageNumber = ConstantSplitPage.default_pageNumber;
-		}
-		return pageNumber;
-	}
-
-	public void setPageNumber(int pageNumber) {
-		this.pageNumber = pageNumber;
-	}
-
-	/**
-	 * 每页显示多少条数据
-	 * @return
-	 */
-	public int getPageSize() {
-		if (pageSize <= 0) {
-			pageSize = ConstantSplitPage.default_pageSize;
-		}
-		if (pageSize > ConstantSplitPage.default_maxSize) {
-			pageSize = ConstantSplitPage.default_pageSize;
-		}
-		return pageSize;
-	}
-
-	public void setPageSize(int pageSize) {
-		this.pageSize = pageSize;
-	}
-
 	public int getCurrentPageCount() {
 		return currentPageCount;
 	}
@@ -190,6 +213,46 @@ public class SplitPage implements Serializable {
 
 	public void setExtData(Object extData) {
 		this.extData = extData;
+	}
+
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+
+	public int getStartRow() {
+		return startRow;
+	}
+
+	public void setStartRow(int startRow) {
+		this.startRow = startRow;
+	}
+
+	public int getEndRow() {
+		return endRow;
+	}
+
+	public void setEndRow(int endRow) {
+		this.endRow = endRow;
+	}
+
+	public boolean isHasPreviousPage() {
+		return hasPreviousPage;
+	}
+
+	public void setHasPreviousPage(boolean hasPreviousPage) {
+		this.hasPreviousPage = hasPreviousPage;
+	}
+
+	public boolean isHasNextPage() {
+		return hasNextPage;
+	}
+
+	public void setHasNextPage(boolean hasNextPage) {
+		this.hasNextPage = hasNextPage;
 	}
 
 }

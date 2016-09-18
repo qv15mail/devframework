@@ -3,7 +3,7 @@ package com.platform.mvc.operator;
 import org.apache.log4j.Logger;
 
 import com.platform.annotation.Table;
-import com.platform.mvc.base.BaseModelCache;
+import com.platform.mvc.base.BaseModel;
 import com.platform.plugin.ParamInitPlugin;
 import com.platform.tools.ToolCache;
 
@@ -12,8 +12,8 @@ import com.platform.tools.ToolCache;
  * @author 董华健
  */
 @SuppressWarnings("unused")
-@Table(tableName = "pt_operator")
-public class Operator extends BaseModelCache<Operator> {
+@Table(tableName = Operator.table_name)
+public class Operator extends BaseModel<Operator> {
 
 	private static final long serialVersionUID = 6761767368352810428L;
 
@@ -21,6 +21,11 @@ public class Operator extends BaseModelCache<Operator> {
 	
 	public static final Operator dao = new Operator();
 
+	/**
+	 * 表名称
+	 */
+	public static final String table_name = "pt_operator";
+	
 	/**
 	 * 字段描述：主键 
 	 * 字段类型：character varying  长度：32
@@ -283,7 +288,7 @@ public class Operator extends BaseModelCache<Operator> {
 	/**
 	 * 添加或者更新缓存
 	 */
-	public void cacheAdd(String ids){
+	public static void cacheAdd(String ids){
 		Operator operator = Operator.dao.findById(ids);
 		ToolCache.set(ParamInitPlugin.cacheStart_operator + ids, operator);
 		ToolCache.set(ParamInitPlugin.cacheStart_operator + operator.getStr(column_url), operator);
@@ -293,7 +298,7 @@ public class Operator extends BaseModelCache<Operator> {
 	 * 删除缓存
 	 * @param ids
 	 */
-	public void cacheRemove(String ids){
+	public static void cacheRemove(String ids){
 		Operator operator = Operator.dao.findById(ids);
 		ToolCache.remove(ParamInitPlugin.cacheStart_operator + ids);
 		ToolCache.remove(ParamInitPlugin.cacheStart_operator + operator.getStr(column_url));
@@ -304,7 +309,7 @@ public class Operator extends BaseModelCache<Operator> {
 	 * @param key
 	 * @return
 	 */
-	public Operator cacheGet(String key){
+	public static Operator cacheGet(String key){
 		Operator operator = ToolCache.get(ParamInitPlugin.cacheStart_operator + key);
 		if(operator == null){
 			operator = Operator.dao.findById(key);

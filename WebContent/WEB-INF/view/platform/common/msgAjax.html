@@ -1,0 +1,20 @@
+<div class="alert alert-warning">
+	<a href="#" onclick="common_ajax.ajaxMainPanel('/jf/platform/index/content');">${i18nMap["admin.common.mainPage"]}</a>
+	>操作失败
+</div>
+
+<div class="alert alert-block alert-danger fade in">
+	<button data-dismiss="alert" class="close" type="button">
+		&times;
+	</button>
+	<h3 class="alert-heading"><i class="fa fa-times"></i> 操作失败!</h3>
+	<p>
+		失败描述：${msg!}
+	</p>
+	<p>
+		<button type="button" class="btn btn-red" onclick="common_ajax.ajaxMainPanel('/jf/platform/index/content');">
+			返  回	<i class="fa fa-mail-reply"></i>
+		</button>
+	</p>
+</div>
+

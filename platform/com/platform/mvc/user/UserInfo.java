@@ -1,15 +1,11 @@
 package com.platform.mvc.user;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import com.platform.annotation.Table;
+import com.platform.mvc.base.BaseModel;
 import org.apache.log4j.Logger;
 
-import com.platform.annotation.Table;
-import com.platform.constant.ConstantInit;
-import com.platform.mvc.base.BaseModel;
-import com.platform.plugin.ParamInitPlugin;
-import com.platform.tools.ToolCache;
+import java.sql.Date;
+import java.sql.Timestamp;
 
 /**
  * 用户详情model
@@ -92,12 +88,6 @@ public class UserInfo extends BaseModel<UserInfo> {
 	public static final String column_description = "description";
 	
 	/**
-	 * 字段描述：邮箱 
-	 * 字段类型：character varying  长度：100
-	 */
-	public static final String column_email = "email";
-	
-	/**
 	 * 字段描述：毕业时间 
 	 * 字段类型：date  长度：null
 	 */
@@ -128,34 +118,16 @@ public class UserInfo extends BaseModel<UserInfo> {
 	public static final String column_householder = "householder";
 	
 	/**
-	 * 字段描述：身份证号 
-	 * 字段类型：character varying  长度：25
-	 */
-	public static final String column_idcard = "idcard";
-	
-	/**
 	 * 字段描述：婚姻状况 
 	 * 字段类型：character varying  长度：20
 	 */
 	public static final String column_marriage = "marriage";
 	
 	/**
-	 * 字段描述：手机号 
-	 * 字段类型：character varying  长度：20
-	 */
-	public static final String column_mobile = "mobile";
-	
-	/**
 	 * 字段描述：msn账号 
 	 * 字段类型：character varying  长度：20
 	 */
 	public static final String column_msn = "msn";
-	
-	/**
-	 * 字段描述：名称 
-	 * 字段类型：character varying  长度：25
-	 */
-	public static final String column_names = "names";
 	
 	/**
 	 * 字段描述：出生地 
@@ -222,17 +194,13 @@ public class UserInfo extends BaseModel<UserInfo> {
 	private Timestamp clientlevelstart;
 	private String culture;
 	private String description;
-	private String email;
 	private Date finishschooldate;
 	private String folk;
 	private String government;
 	private String homepage;
 	private String householder;
-	private String idcard;
 	private String marriage;
-	private String mobile;
 	private String msn;
-	private String names;
 	private String nativityaddress;
 	private String postboy;
 	private String qq;
@@ -308,12 +276,6 @@ public class UserInfo extends BaseModel<UserInfo> {
 	public String getDescription() {
 		return get(column_description);
 	}
-	public void setEmail(String email){
-		set(column_email, email);
-	}
-	public String getEmail() {
-		return get(column_email);
-	}
 	public void setFinishschooldate(Date finishschooldate){
 		set(column_finishschooldate, finishschooldate);
 	}
@@ -344,35 +306,17 @@ public class UserInfo extends BaseModel<UserInfo> {
 	public String getHouseholder() {
 		return get(column_householder);
 	}
-	public void setIdcard(String idcard){
-		set(column_idcard, idcard);
-	}
-	public String getIdcard() {
-		return get(column_idcard);
-	}
 	public void setMarriage(String marriage){
 		set(column_marriage, marriage);
 	}
 	public String getMarriage() {
 		return get(column_marriage);
 	}
-	public void setMobile(String mobile){
-		set(column_mobile, mobile);
-	}
-	public String getMobile() {
-		return get(column_mobile);
-	}
 	public void setMsn(String msn){
 		set(column_msn, msn);
 	}
 	public String getMsn() {
 		return get(column_msn);
-	}
-	public void setNames(String names){
-		set(column_names, names);
-	}
-	public String getNames() {
-		return get(column_names);
 	}
 	public void setNativityaddress(String nativityaddress){
 		set(column_nativityaddress, nativityaddress);
@@ -421,38 +365,6 @@ public class UserInfo extends BaseModel<UserInfo> {
 	}
 	public String getTelephone() {
 		return get(column_telephone);
-	}
-	
-	/**
-	 * 添加或者更新缓存
-	 */
-	public void cacheAdd(String ids){
-		UserInfo userInfo = UserInfo.dao.findById(ids);
-		ToolCache.set(ParamInitPlugin.cacheStart_userInfo + userInfo.getStr(UserInfo.column_email), userInfo);
-		ToolCache.set(ParamInitPlugin.cacheStart_userInfo + userInfo.getStr(UserInfo.column_mobile), userInfo);
-	}
-
-	/**
-	 * 删除缓存
-	 */
-	public void cacheRemove(String ids){
-		UserInfo userInfo = UserInfo.dao.findById(ids);
-		ToolCache.remove(ParamInitPlugin.cacheStart_userInfo + userInfo.getStr(UserInfo.column_email));
-		ToolCache.remove(ParamInitPlugin.cacheStart_userInfo + userInfo.getStr(UserInfo.column_mobile));
-	}
-
-	/**
-	 * 获取缓存
-	 * @param ids
-	 * @return
-	 */
-	public UserInfo cacheGet(String ids){
-		UserInfo userInfo = ToolCache.get(ParamInitPlugin.cacheStart_userInfo + ids);
-		if(userInfo == null){
-			userInfo = UserInfo.dao.findById(ids);
-			cacheAdd(ids);
-		}
-		return userInfo;
 	}
 	
 }

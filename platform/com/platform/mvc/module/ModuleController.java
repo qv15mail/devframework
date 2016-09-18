@@ -1,19 +1,18 @@
 package com.platform.mvc.module;
 
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.jfinal.aop.Before;
 import com.platform.annotation.Controller;
 import com.platform.dto.ZtreeNode;
 import com.platform.mvc.base.BaseController;
+import org.apache.log4j.Logger;
+
+import java.util.List;
 
 /**
  * 模块管理
  * @author 董华健
  */
-@Controller(controllerKey = "/jf/platform/module")
+@Controller("/jf/platform/module")
 public class ModuleController extends BaseController {
 
 	@SuppressWarnings("unused")
@@ -30,6 +29,7 @@ public class ModuleController extends BaseController {
 	 * 模块tree首页
 	 */
 	public void index() {
+
 		render("/platform/module/tree.html");
 	}
 

@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  * /common/blog/add.html
  * 
  */
-@Controller(controllerKey = "/jf/test/blog")
+@Controller("/jf/test/blog")
 public class BlogController extends BaseController {
 
 	@SuppressWarnings("unused")

@@ -45,7 +45,7 @@ public class StationService extends BaseService {
 			node.setId(station.getPKValue());
 			node.setName(station.getStr(Station.column_names));
 			node.setIsParent(true);
-			node.setIcon(cxt + "/jsFile/zTree/css/zTreeStyle/img/diy/" + station.getStr(Station.column_images));
+			node.setIcon(cxt + "/jsfile/ztree/css/zTreeStyle/img/diy/" + station.getStr(Station.column_images));
 			nodeList.add(node);
 		}
 		
@@ -79,9 +79,6 @@ public class StationService extends BaseService {
 		station.set(Station.column_images, images);
 		station.save();
 		
-		// 缓存
-		Station.dao.cacheAdd(station.getPKValue());
-		
 		return station.getPKValue();
 	}
 	
@@ -101,9 +98,6 @@ public class StationService extends BaseService {
 			//更新上级模块
 			station.set(Station.column_parentstationids, pIds).update();
 		}
-
-		// 缓存
-		Station.dao.cacheAdd(ids);
 	}
 	
 	/**
@@ -129,28 +123,10 @@ public class StationService extends BaseService {
 			pStation.update();
 		}
 	    
-		// 缓存
-		Station.dao.cacheRemove(ids);
-		
 		// 删除
 	    Station.dao.deleteById(ids);
 	    
 	    return true;
-	}
-	
-	/**
-	 * 设置岗位功能
-	 * @param roleIds
-	 * @param moduleIds
-	 * @param operatorIds
-	 */
-	public void setOperator(String stationIds, String moduleIds, String operatorIds){
-		Station station = Station.dao.findById(stationIds);
-		//station.set("moduleids", moduleIds);
-		station.set(Station.column_operatorids, operatorIds).update();
-		
-		// 缓存
-		Station.dao.cacheAdd(stationIds);
 	}
 	
 	

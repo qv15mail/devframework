@@ -2,9 +2,13 @@ package com.platform.mvc.user;
 
 import com.jfinal.aop.Before;
 import com.platform.annotation.Controller;
-import com.platform.constant.ConstantInit;
 import com.platform.dto.ZtreeNode;
 import com.platform.mvc.base.BaseController;
+import com.platform.mvc.dept.Department;
+import com.platform.mvc.station.Station;
+import com.platform.mvc.upload.Upload;
+import com.platform.mvc.upload.UploadService;
+import com.platform.tools.ToolRandoms;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -12,22 +16,20 @@ import java.util.List;
 /**
  * 用户管理
  */
-@Controller(controllerKey = "/jf/platform/user")
+@Controller("/jf/platform/user")
 public class UserController extends BaseController {
 
 	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(UserController.class);
 	
 	private UserService userService;
-	
-	private String deptIds;
-	private String groupIds;
+	private UploadService uploadService;
 	
 	/**
 	 * 默认列表
 	 */
 	public void index() {
-		paging(ConstantInit.db_dataSource_main, splitPage, User.sqlId_splitPageSelect, User.sqlId_splitPageFrom);
+		paging(splitPage, User.sqlId_splitPageSelect, User.sqlId_splitPageFrom);
 		render("/platform/user/list.html");
 	}
 	
@@ -36,12 +38,18 @@ public class UserController extends BaseController {
 	 */
 	@Before(UserValidator.class)
 	public void save() {
+		String ids = ToolRandoms.getUuid(true);
+		
+		//List<UploadFile> files = getFiles("files" + File.separator + "upload", 1 * 1024 * 1024, ToolString.encoding); // 1M
+		//uploadService.upload("webRoot", files.get(0), ids);
+
 		String password = getPara("password");
 		User user = getModel(User.class);
 		UserInfo userInfo = getModel(UserInfo.class);
-		userService.save(user, password, userInfo);
-		//render("/platform/user/add.html");
+		
+		userService.save(ids, user, password, userInfo);
 		redirect("/jf/platform/user");
+		//render("/platform/user/add.html");
 	}
 	
 	/**
@@ -50,7 +58,10 @@ public class UserController extends BaseController {
 	public void edit() {
 		User user = User.dao.findById(getPara());
 		setAttr("user", user);
-		setAttr("userInfo", UserInfo.dao.findById(user.getStr(User.column_userinfoids)));
+		setAttr("userInfo", UserInfo.dao.findById(user.getPKValue()));
+		setAttr("station", Station.dao.findById(user.getStationids()));
+		setAttr("dept", Department.dao.findById(user.getDepartmentids()));
+		setAttr("upload", Upload.dao.findById(user.getPKValue()));
 		render("/platform/user/update.html");
 	}
 	
@@ -59,9 +70,20 @@ public class UserController extends BaseController {
 	 */
 	@Before(UserValidator.class)
 	public void update() {
+		//List<UploadFile> files = getFiles("files" + File.separator + "upload", 1 * 1024 * 1024, ToolString.encoding); // 1M
+
 		String password = getPara("password");
 		User user = getModel(User.class);
 		UserInfo userInfo = getModel(UserInfo.class);
+		
+//		if(files != null && files.size() == 1){
+//			// 删除旧LOGO
+//			Upload.dao.deleteById(user.getPKValue());
+//
+//			// 存入新LOGO
+//			uploadService.upload("webRoot", files.get(0), user.getPKValue());
+//		}
+		
 		userService.update(user, password, userInfo);
 		redirect("/jf/platform/user");
 	}
@@ -73,19 +95,15 @@ public class UserController extends BaseController {
 		User user = User.dao.findById(getPara());
 		setAttr("user", user);
 		setAttr("userInfo", user.getUserInfo());
+		setAttr("station", Station.dao.findById(user.getStationids()));
+		setAttr("dept", Department.dao.findById(user.getDepartmentids()));
+		setAttr("upload", Upload.dao.findById(user.getPKValue()));
 		render("/platform/user/view.html");
-	}
-	public void view2() {
-		User user = User.dao.findById(getPara());
-		setAttr("user", user);
-		setAttr("userInfo", user.getUserInfo());
-		render("/platform/user/view2.html");
 	}
 
 	/**
 	 * 删除
 	 */
-	@Before(UserValidator.class)
 	public void delete() {
 		userService.delete(getPara() == null ? ids : getPara());
 		redirect("/jf/platform/user");
@@ -95,16 +113,8 @@ public class UserController extends BaseController {
 	 * 用户树ztree节点数据
 	 */
 	public void treeData() {
-		List<ZtreeNode> list = userService.childNodeData(getCxt(), deptIds);
+		List<ZtreeNode> list = userService.childNodeData(getCxt(), getPara("deptIds"));
 		renderJson(list);
-	}
-	
-	/**
-	 * 设置用户拥有的组
-	 */
-	public void setGroup(){
-		userService.setGroup(ids, groupIds);
-		renderText(ids);
 	}
 	
 	/**

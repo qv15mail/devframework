@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.platform.annotation.Table;
-import com.platform.mvc.base.BaseModelCache;
+import com.platform.mvc.base.BaseModel;
 import com.platform.mvc.param.Param;
 import com.platform.plugin.ParamInitPlugin;
 import com.platform.tools.ToolCache;
@@ -17,8 +17,8 @@ import com.platform.tools.ToolCache;
  * @author 董华健
  */
 @SuppressWarnings("unused")
-@Table(tableName = "pt_dict")
-public class Dict extends BaseModelCache<Dict> {
+@Table(tableName = Dict.table_name)
+public class Dict extends BaseModel<Dict> {
 	
 	private static final long serialVersionUID = 2051998642258015518L;
 
@@ -26,6 +26,11 @@ public class Dict extends BaseModelCache<Dict> {
 	
 	public static final Dict dao = new Dict();
 
+	/**
+	 * 表名称
+	 */
+	public static final String table_name = "pt_dict";
+	
 	/**
 	 * 字段描述：主键 
 	 * 字段类型：character varying  长度：32

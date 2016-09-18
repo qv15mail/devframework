@@ -1,23 +1,24 @@
 package com.platform.mvc.user;
 
-import java.sql.Timestamp;
-
-import org.apache.log4j.Logger;
-
 import com.platform.annotation.Table;
-import com.platform.mvc.base.BaseModelCache;
+import com.platform.mvc.base.BaseModel;
 import com.platform.mvc.dept.Department;
 import com.platform.mvc.station.Station;
+import com.platform.mvc.usergroup.UserGroup;
 import com.platform.plugin.ParamInitPlugin;
 import com.platform.tools.ToolCache;
+import org.apache.log4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * 用户model
  * @author 董华健
  */
 @SuppressWarnings("unused")
-@Table(tableName = "pt_user")
-public class User extends BaseModelCache<User> {
+@Table(tableName = User.table_name)
+public class User extends BaseModel<User> {
 
 	private static final long serialVersionUID = 6761767368352810428L;
 
@@ -25,6 +26,11 @@ public class User extends BaseModelCache<User> {
 	
 	public static final User dao = new User();
 
+	/**
+	 * 表名称
+	 */
+	public static final String table_name = "pt_user";
+	
 	/**
 	 * 字段描述：主键 
 	 * 字段类型：character varying  长度：32
@@ -51,13 +57,13 @@ public class User extends BaseModelCache<User> {
 	
 	/**
 	 * 字段描述：密码 
-	 * 字段类型：bytea  长度：null
+	 * 字段类型：character varying  长度：500
 	 */
 	public static final String column_password = "password";
 	
 	/**
 	 * 字段描述：密钥 
-	 * 字段类型：bytea  长度：null
+	 * 字段类型：character varying  长度：500
 	 */
 	public static final String column_salt = "salt";
 	
@@ -80,70 +86,40 @@ public class User extends BaseModelCache<User> {
 	public static final String column_username = "username";
 	
 	/**
+	 * 字段描述：名称 
+	 * 字段类型：character varying  长度：25
+	 */
+	public static final String column_names = "names";
+	
+	/**
 	 * 字段描述：所在部门ids 
 	 * 字段类型：character varying  长度：32
 	 */
 	public static final String column_departmentids = "departmentids";
 	
 	/**
-	 * 字段描述：用户扩展信息ids 
-	 * 字段类型：character varying  长度：32
-	 */
-	public static final String column_userinfoids = "userinfoids";
-	
-	/**
 	 * 字段描述：所在岗位ids 
-	 * 字段类型：text  长度：null
+	 * 字段类型：character varying  长度：32
 	 */
 	public static final String column_stationids = "stationids";
 	
 	/**
-	 * 字段描述：行级部门ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_deptids = "deptids";
-	
-	/**
-	 * 字段描述：行级人员ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_userids = "userids";
-	
-	/**
-	 * 字段描述：所在分组ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_groupids = "groupids";
-	
-	/**
-	 * 字段描述：所在部门names 
+	 * 字段描述：身份证号 
 	 * 字段类型：character varying  长度：25
 	 */
-	public static final String column_departmentnames = "departmentnames";
+	public static final String column_idcard = "idcard";
 	
 	/**
-	 * 字段描述：所在岗位names 
-	 * 字段类型：text  长度：null
+	 * 字段描述：手机号 
+	 * 字段类型：character varying  长度：20
 	 */
-	public static final String column_stationnames = "stationnames";
+	public static final String column_mobile = "mobile";
 	
 	/**
-	 * 字段描述：行级部门names 
-	 * 字段类型：text  长度：null
+	 * 字段描述：邮箱 
+	 * 字段类型：character varying  长度：100
 	 */
-	public static final String column_deptnames = "deptnames";
-	
-	/**
-	 * 字段描述：行级人员names 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_usernames = "usernames";
-	
-	/**
-	 * 字段描述：所在分组names 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_groupnames = "groupnames";
+	public static final String column_email = "email";
 	
 	/**
 	 * sqlId : platform.user.splitPageSelect
@@ -191,22 +167,17 @@ public class User extends BaseModelCache<User> {
 	private Long version;
 	private Long errorcount;
 	private Long orderids;
-	private byte[] password;
-	private byte[] salt;
+	private String password;
+	private String salt;
 	private String status;
 	private Timestamp stopdate;
 	private String username;
+	private String names;
 	private String departmentids;
-	private String userinfoids;
 	private String stationids;
-	private String deptids;
-	private String userids;
-	private String groupids;
-	private String departmentnames;
-	private String stationnames;
-	private String deptnames;
-	private String usernames;
-	private String groupnames;
+	private String idcard;
+	private String email;
+	private String mobile;
 	
 	public void setIds(String ids){
 		set(column_ids, ids);
@@ -232,16 +203,16 @@ public class User extends BaseModelCache<User> {
 	public Long getOrderids() {
 		return get(column_orderids);
 	}
-	public void setPassword(byte[] password){
+	public void setPassword(String password){
 		set(column_password, password);
 	}
-	public byte[] getPassword() {
+	public String getPassword() {
 		return get(column_password);
 	}
-	public void setSalt(byte[] salt){
+	public void setSalt(String salt){
 		set(column_salt, salt);
 	}
-	public byte[] getSalt() {
+	public String getSalt() {
 		return get(column_salt);
 	}
 	public void setStatus(String status){
@@ -262,17 +233,17 @@ public class User extends BaseModelCache<User> {
 	public String getUsername() {
 		return get(column_username);
 	}
+	public void setNames(String names){
+		set(column_names, names);
+	}
+	public String getNames() {
+		return get(column_names);
+	}
 	public void setDepartmentids(String departmentids){
 		set(column_departmentids, departmentids);
 	}
 	public String getDepartmentids() {
 		return get(column_departmentids);
-	}
-	public void setUserinfoids(String userinfoids){
-		set(column_userinfoids, userinfoids);
-	}
-	public String getUserinfoids() {
-		return get(column_userinfoids);
 	}
 	public void setStationids(String stationids){
 		set(column_stationids, stationids);
@@ -280,53 +251,23 @@ public class User extends BaseModelCache<User> {
 	public String getStationids() {
 		return get(column_stationids);
 	}
-	public void setDeptids(String deptids){
-		set(column_deptids, deptids);
+	public void setEmail(String email){
+		set(column_email, email);
 	}
-	public String getDeptids() {
-		return get(column_deptids);
+	public String getEmail() {
+		return get(column_email);
 	}
-	public void setUserids(String userids){
-		set(column_userids, userids);
+	public void setMobile(String mobile){
+		set(column_mobile, mobile);
 	}
-	public String getUserids() {
-		return get(column_userids);
+	public String getMobile() {
+		return get(column_mobile);
 	}
-	public void setGroupids(String groupids){
-		set(column_groupids, groupids);
+	public void setIdcard(String idcard){
+		set(column_idcard, idcard);
 	}
-	public String getGroupids() {
-		return get(column_groupids);
-	}
-	public void setDepartmentnames(String departmentnames){
-		set(column_departmentnames, departmentnames);
-	}
-	public String getDepartmentnames() {
-		return get(column_departmentnames);
-	}
-	public void setStationnames(String stationnames){
-		set(column_stationnames, stationnames);
-	}
-	public String getStationnames() {
-		return get(column_stationnames);
-	}
-	public void setDeptnames(String deptnames){
-		set(column_deptnames, deptnames);
-	}
-	public String getDeptnames() {
-		return get(column_deptnames);
-	}
-	public void setUsernames(String usernames){
-		set(column_usernames, usernames);
-	}
-	public String getUsernames() {
-		return get(column_usernames);
-	}
-	public void setGroupnames(String groupnames){
-		set(column_groupnames, groupnames);
-	}
-	public String getGroupnames() {
-		return get(column_groupnames);
+	public String getIdcard() {
+		return get(column_idcard);
 	}
 	
 	/**
@@ -334,11 +275,7 @@ public class User extends BaseModelCache<User> {
 	 * @return
 	 */
 	public UserInfo getUserInfo(){
-		String userinfoIds = get(column_userinfoids);
-		if(null != userinfoIds && !userinfoIds.isEmpty()){
-			return UserInfo.dao.findById(userinfoIds);
-		}
-		return null;
+		return UserInfo.dao.findById(this.getPKValue());
 	}
 
 	/**
@@ -346,11 +283,7 @@ public class User extends BaseModelCache<User> {
 	 * @return
 	 */
 	public Department getDepartment(){
-		String departmentids = get(column_departmentids);
-		if(null != departmentids && !departmentids.isEmpty()){
-			return Department.dao.findById(departmentids);
-		}
-		return null;
+		return Department.dao.findById(this.getDepartmentids());
 	}
 
 	/**
@@ -358,36 +291,37 @@ public class User extends BaseModelCache<User> {
 	 * @return
 	 */
 	public Station getStation(){
-		String stationids = get(column_stationids);
-		if(null != stationids && !stationids.isEmpty()){
-			return Station.dao.findById(stationids);
-		}
-		return null;
+		return Station.dao.findById(this.getStationids());
 	}
 	
 	/**
 	 * 添加或者更新缓存
 	 */
-	public void cacheAdd(String ids){
+	public static void cacheAdd(String ids){
 		User user = User.dao.findById(ids);
+		
+		String sql = getSql("platform.userGroup.findGroupIdsByUserIds");
+		List<UserGroup> ugList = UserGroup.dao.find(sql, user.getPKValue());
+		user.put("ugList", ugList);
 		
 		ToolCache.set(ParamInitPlugin.cacheStart_user + ids, user);
 		ToolCache.set(ParamInitPlugin.cacheStart_user + user.getStr(column_username), user);
-		
-		String userInfoIds = user.getStr(User.column_userinfoids);
-		UserInfo.dao.cacheAdd(userInfoIds);
+		ToolCache.set(ParamInitPlugin.cacheStart_user + user.getStr(column_mobile), user);
+		ToolCache.set(ParamInitPlugin.cacheStart_user + user.getStr(column_email), user);
+		ToolCache.set(ParamInitPlugin.cacheStart_user + user.getStr(column_idcard), user);
 	}
 
 	/**
 	 * 删除缓存
 	 */
-	public void cacheRemove(String ids){
+	public static void cacheRemove(String ids){
 		User user = User.dao.findById(ids);
+		
 		ToolCache.remove(ParamInitPlugin.cacheStart_user + ids);
 		ToolCache.remove(ParamInitPlugin.cacheStart_user + user.getStr(column_username));
-
-		String userInfoIds = user.getStr(User.column_userinfoids);
-		UserInfo.dao.cacheRemove(userInfoIds);
+		ToolCache.remove(ParamInitPlugin.cacheStart_user + user.getStr(column_mobile));
+		ToolCache.remove(ParamInitPlugin.cacheStart_user + user.getStr(column_email));
+		ToolCache.remove(ParamInitPlugin.cacheStart_user + user.getStr(column_idcard));
 	}
 
 	/**
@@ -395,7 +329,7 @@ public class User extends BaseModelCache<User> {
 	 * @param ids
 	 * @return
 	 */
-	public User cacheGet(String ids){
+	public static User cacheGet(String ids){
 		User user = ToolCache.get(ParamInitPlugin.cacheStart_user + ids);
 		if(user == null){
 			user = User.dao.findById(ids);

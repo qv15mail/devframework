@@ -1,17 +1,5 @@
 package com.platform.mvc.login;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.platform.annotation.Service;
@@ -20,9 +8,19 @@ import com.platform.constant.ConstantLogin;
 import com.platform.interceptor.AuthInterceptor;
 import com.platform.mvc.base.BaseService;
 import com.platform.mvc.user.User;
-import com.platform.mvc.user.UserInfo;
 import com.platform.tools.ToolDateTime;
 import com.platform.tools.security.ToolPbkdf2;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service(name = LoginService.serviceName)
 public class LoginService extends BaseService {
@@ -40,82 +38,63 @@ public class LoginService extends BaseService {
 	 * 描述：新增用户时userIds为空，修改用户时userIds传值
 	 */
 	public boolean valiUserName(String userIds, String userName){
+		return valiByUser(userIds, User.column_username, userName);
+	}
+
+	/**
+	 * 验证邮箱是否存在
+	 * @param userIds
+	 * @param mailBox
+	 * @return
+	 * 描述：新增用户时userIds为空，修改用户时userIds传值
+	 */
+	public boolean valiMailBox(String userIds, String mailBox){
+		return valiByUser(userIds, User.column_email, mailBox);
+	}
+
+	/**
+	 * 验证身份证是否存在
+	 * @param userIds
+	 * @param idcard
+	 * @return
+	 * 描述：新增用户时userIds为空，修改用户时userIds传值
+	 */
+	public boolean valiIdcard(String userIds, String idcard){
+		return valiByUser(userIds, User.column_idcard, idcard);
+	}
+
+	/**
+	 * 验证手机号是否存在
+	 * @param userIds
+	 * @param mobile
+	 * @return
+	 * 描述：新增用户时userIds为空，修改用户时userIds传值
+	 */
+	public boolean valiMobile(String userIds, String mobile){
+		return valiByUser(userIds, User.column_mobile, mobile);
+	}
+	
+	/**
+	 * 验证UserInfo表中的某一列是否唯一可用
+	 * @param userIds
+	 * @param condition
+	 * @param value
+	 * @return
+	 */
+	private boolean valiByUser(String userIds, String condition, String value){
 		Map<String, Object> param = new HashMap<String, Object>();
 		param.put("column", "ids");
 		param.put("table", "pt_user");
-		param.put("condition", User.column_username);
+		param.put("condition", condition);
 		String sql = getSqlByBeetl("platform.baseModel.select", param);
-		List<User> list = User.dao.find(sql, userName);
+		List<User> list = User.dao.find(sql, value);
 		int size = list.size();
 		if(size == 0){
 			return true;
 		}
 		if(size == 1){
 			User user = list.get(0);
-			if(userIds != null && user.getStr(UserInfo.column_ids).equals(userIds)){
-				return true;
-			}
-		}
-		if(size > 1){
-			return false;
-		}
-		return false;
-	}
-
-	/**
-	 * 验证邮箱是否存在
-	 * @param userInfoIds
-	 * @param mailBox
-	 * @return
-	 * 描述：新增用户时userInfoIds为空，修改用户时userInfoIds传值
-	 */
-	public boolean valiMailBox(String userInfoIds, String mailBox){
-		return valiByUserInfo(userInfoIds, UserInfo.column_email, mailBox);
-	}
-
-	/**
-	 * 验证身份证是否存在
-	 * @param userInfoIds
-	 * @param idcard
-	 * @return
-	 * 描述：新增用户时userInfoIds为空，修改用户时userInfoIds传值
-	 */
-	public boolean valiIdcard(String userInfoIds, String idcard){
-		return valiByUserInfo(userInfoIds, UserInfo.column_idcard, idcard);
-	}
-
-	/**
-	 * 验证手机号是否存在
-	 * @param userInfoIds
-	 * @param mobile
-	 * @return
-	 * 描述：新增用户时userInfoIds为空，修改用户时userInfoIds传值
-	 */
-	public boolean valiMobile(String userInfoIds, String mobile){
-		return valiByUserInfo(userInfoIds, UserInfo.column_mobile, mobile);
-	}
-	
-	/**
-	 * 验证UserInfo表中的某一列是否唯一可用
-	 * @param userInfoIds
-	 * @param condition
-	 * @param value
-	 * @return
-	 */
-	private boolean valiByUserInfo(String userInfoIds, String condition, String value){
-		Map<String, Object> param = new HashMap<String, Object>();
-		param.put("column", "ids");
-		param.put("table", "pt_userinfo");
-		param.put("condition", condition);
-		String sql = getSqlByBeetl("platform.baseModel.select", param);
-		List<UserInfo> list = UserInfo.dao.find(sql, value);
-		int size = list.size();
-		if(size == 0){
-			return true;
-		}
-		if(size == 1){
-			UserInfo userInfo = list.get(0);
-			if(userInfoIds != null && userInfo.getStr(UserInfo.column_ids).equals(userInfoIds)){
+			if(userIds != null && user.getStr(User.column_ids).equals(userIds)){
 				return true;
 			}
 		}
@@ -136,20 +115,10 @@ public class LoginService extends BaseService {
 	 */
 	public int login(HttpServletRequest request, HttpServletResponse response, String userName, String passWord, boolean autoLogin) {
 		// 1.取用户
-		User user = null;
-		Object userObj = User.dao.cacheGet(userName);
-		if (null != userObj) {
-			user = (User) userObj;
-		} else {
-			Map<String, Object> param = new HashMap<String, Object>();
-			param.put("column", User.column_username);
-			String sql = getSqlByBeetl(User.sqlId_column, param);
-			List<User> userList = User.dao.find(sql, userName);
-			if (userList.size() != 1) {
+		User user = User.cacheGet(userName);
+		if (null == user) {
 				return ConstantLogin.login_info_0;// 用户不存在
 			}
-			user = userList.get(0);
-		}
 		
 		// 2.停用账户
 		String status = user.getStr(User.column_status);
@@ -170,13 +139,15 @@ public class LoginService extends BaseService {
 				String sql = getSql(User.sqlId_start);
 				Db.use(ConstantInit.db_dataSource_main).update(sql, user.getPKValue());
 				// 更新缓存
-				User.dao.cacheAdd(user.getPKValue());
+				User.cacheAdd(user.getPKValue());
 			}
 		}
 
 		// 4.验证密码
-		byte[] salt = user.getBytes(User.column_salt);// 密码盐
-		byte[] encryptedPassword = user.getBytes(User.column_password);
+		String saltStr = user.getSalt();			// 密码盐
+		byte[] salt = Base64.decodeBase64(saltStr);
+		String passStr = user.getPassword();		// 密码
+		byte[] encryptedPassword = Base64.decodeBase64(passStr);
 		boolean bool = false;
 		try {
 			bool = ToolPbkdf2.authenticate(passWord, encryptedPassword, salt);
@@ -194,7 +165,7 @@ public class LoginService extends BaseService {
 			String sql = getSql(User.sqlId_stop);
 			Db.use(ConstantInit.db_dataSource_main).update(sql, ToolDateTime.getSqlTimestamp(ToolDateTime.getDate()), errorCount+1, user.getPKValue());
 			// 更新缓存
-			User.dao.cacheAdd(user.getPKValue());
+			User.cacheAdd(user.getPKValue());
 			return ConstantLogin.login_info_4;
 		}
 	}
@@ -209,20 +180,10 @@ public class LoginService extends BaseService {
 	 */
 	public int pass(HttpServletRequest request, HttpServletResponse response, String userName, String passWord) {
 		// 1.取用户
-		User user = null;
-		Object userObj = User.dao.cacheGet(userName);
-		if (null != userObj) {
-			user = (User) userObj;
-		} else {
-			Map<String, Object> param = new HashMap<String, Object>();
-			param.put("column", User.column_username);
-			String sql = getSqlByBeetl(User.sqlId_column, param);
-			List<User> userList = User.dao.find(sql, userName);
-			if (userList.size() != 1) {
+		User user = User.cacheGet(userName);
+		if (null == user) {
 				return ConstantLogin.login_info_0;// 用户不存在
 			}
-			user = userList.get(0);
-		}
 		
 		// 2.停用账户
 		String status = user.getStr(User.column_status);
@@ -243,13 +204,15 @@ public class LoginService extends BaseService {
 				String sql = getSql(User.sqlId_start);
 				Db.use(ConstantInit.db_dataSource_main).update(sql, user.getPKValue());
 				// 更新缓存
-				User.dao.cacheAdd(user.getPKValue());
+				User.cacheAdd(user.getPKValue());
 			}
 		}
 
 		// 4.验证密码
-		byte[] salt = user.getBytes(User.column_salt);// 密码盐
-		byte[] encryptedPassword = user.getBytes(User.column_password);
+		String saltStr = user.getSalt();			// 密码盐
+		byte[] salt = Base64.decodeBase64(saltStr);
+		String passStr = user.getPassword();		// 密码
+		byte[] encryptedPassword = Base64.decodeBase64(passStr);
 		boolean bool = false;
 		try {
 			bool = ToolPbkdf2.authenticate(passWord, encryptedPassword, salt);
@@ -266,7 +229,7 @@ public class LoginService extends BaseService {
 			String sql = getSql(User.sqlId_stop);
 			Db.use(ConstantInit.db_dataSource_main).update(sql, ToolDateTime.getSqlTimestamp(ToolDateTime.getDate()), errorCount+1, user.getPKValue());
 			// 更新缓存
-			User.dao.cacheAdd(user.getPKValue());
+			User.cacheAdd(user.getPKValue());
 			return ConstantLogin.login_info_4;
 		}
 	}

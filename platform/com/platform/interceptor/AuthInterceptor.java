@@ -1,15 +1,5 @@
 package com.platform.interceptor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
-
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.PropKit;
@@ -17,15 +7,24 @@ import com.platform.constant.ConstantAuth;
 import com.platform.constant.ConstantInit;
 import com.platform.constant.ConstantWebContext;
 import com.platform.mvc.base.BaseController;
-import com.platform.mvc.group.Group;
+import com.platform.mvc.grouprole.GroupRoleService;
 import com.platform.mvc.operator.Operator;
-import com.platform.mvc.role.Role;
-import com.platform.mvc.station.Station;
+import com.platform.mvc.stationoperator.StationOperatorService;
 import com.platform.mvc.syslog.Syslog;
 import com.platform.mvc.user.User;
+import com.platform.mvc.usergroup.UserGroup;
 import com.platform.tools.ToolDateTime;
 import com.platform.tools.ToolWeb;
 import com.platform.tools.security.ToolIDEA;
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 权限认证拦截器
@@ -79,11 +78,11 @@ public class AuthInterceptor implements Interceptor {
 		}
 
 		log.info("获取URI对象!");
-		Object operatorObj = Operator.dao.cacheGet(uri);
+		Operator operator = Operator.cacheGet(uri);
 
 		log.info("判断URI是否存在!");
-		if (null == operatorObj) {
-			log.info("URI不存在!");
+		if (null == operator) {
+			log.info("URI不存在!uri = " + uri);
 
 			log.info("访问失败时保存日志!");
 			reqSysLog.set(Syslog.column_status, "0");// 失败
@@ -91,12 +90,11 @@ public class AuthInterceptor implements Interceptor {
 			reqSysLog.set(Syslog.column_cause, "1");// URL不存在
 
 			log.info("返回失败提示页面!");
-			toView(contro, ConstantAuth.auth_no_url, "权限认证过滤器检测：URI不存在");
+			toView(contro, ConstantAuth.auth_no_url,uri+ "权限认证过滤器检测：URI不存在");
 			return;
 		}
 
 		log.info("URI存在!");
-		Operator operator = (Operator) operatorObj;
 		reqSysLog.set(Syslog.column_operatorids, operator.getPKValue());
 
 		if (operator.get(Operator.column_privilegess).equals("1")) {// 是否需要权限验证
@@ -112,7 +110,7 @@ public class AuthInterceptor implements Interceptor {
 				return;
 			}
 
-			if (!hasPrivilegeUrl(user.getPKValue(), uri)) {// 权限验证
+			if (!hasPrivilegeUrl(operator.getPKValue(), user.getPKValue())) {// 权限验证
 				log.info("权限验证失败，没有权限!");
 
 				reqSysLog.set(Syslog.column_status, "0");// 失败
@@ -120,7 +118,7 @@ public class AuthInterceptor implements Interceptor {
 				reqSysLog.set(Syslog.column_cause, "0");// 没有权限
 
 				log.info("返回失败提示页面!");
-				toView(contro, ConstantAuth.auth_no_permissions, "权限验证失败，您没有操作权限");
+				toView(contro, ConstantAuth.auth_no_permissions, "权限验证失败，您没有操作权限:"+uri);
 				return;
 			}
 		}
@@ -148,7 +146,7 @@ public class AuthInterceptor implements Interceptor {
 			}
 		}
 
-		log.info("权限认真成功更新日志对象属性!");
+		log.info("权限认证成功更新日志对象属性!");
 		reqSysLog.set(Syslog.column_status, "1");// 成功
 		Date actionStartDate = ToolDateTime.getDate();// action开始时间
 		reqSysLog.set(Syslog.column_actionstartdate, ToolDateTime.getSqlTimestamp(actionStartDate));
@@ -201,78 +199,64 @@ public class AuthInterceptor implements Interceptor {
 		
 		String isAjax = contro.getRequest().getHeader("X-Requested-With");
 		if(isAjax != null && isAjax.equalsIgnoreCase("XMLHttpRequest")){
-			contro.render("/common/msgAjax.html"); // Ajax页面
+			contro.render("/platform/common/msgAjax.html"); // Ajax页面
 		}else{
-			contro.render("/common/msg.html"); // 完整html页面
+			contro.render("/platform/common/msg.html"); // 完整html页面
 		}
 	}
 
 	/**
-	 * 判断用户是否拥有某个url的操作权限
+	 * 判断用户是否拥有某个功能的操作权限
 	 * 
+	 * @param operatorIds
 	 * @param userIds
-	 * @param url
 	 * @return
 	 */
-	public static boolean hasPrivilegeUrl(String userIds, String url) {
-		// 基于缓存查询operator
-		Operator operator = Operator.dao.cacheGet(url);
-		if (null == operator) {
-			log.error("URL缓存不存在：" + url);
-			return false;
-		}
-		if (operator.get(Operator.column_privilegess).equals("0")) {
-			log.error("URL不需要权限验证：" + url);
-			return false;
+	public static boolean hasPrivilegeUrl(String operatorIds, String userIds) {
+		
+		/**  
+		 * 1.直接查询数据库表验证操作权限
+		 * 
+		// 根据分组角色查询权限
+		String roleSql = ToolSqlXml.getSql("platform.roleOperator.hasUrlByOperatorAndUserIds");
+		long roleCount = Db.use(ConstantInit.db_dataSource_main).queryNumber(roleSql, operatorIds, userIds).longValue();
+		if (roleCount > 0) {
+			return true;
 		}
 
-		// 基于缓存查询user
-		Object userObj = User.dao.cacheGet(userIds);
-		if (null == userObj) {
-			log.error("用户缓存不存在：" + userIds);
-			return false;
+		// 根据岗位查询权限
+		String stationSql = ToolSqlXml.getSql("platform.stationOperator.hasUrlByOperatorAndUserIds");
+		long stationCount = Db.use(ConstantInit.db_dataSource_main).queryNumber(stationSql, operatorIds, userIds).longValue();
+		if (stationCount > 0) {
+			return true;
 		}
-		User user = (User) userObj;
+		**/
 
-		// 权限验证对象
-		String operatorIds = operator.getPKValue() + ",";
-		String groupIds = user.getStr(User.column_groupids);
-		String stationIds = user.getStr(User.column_stationids);
+		/**
+		 * 2.取缓存验证操作权限
+		 **/
 
-		// 根据分组查询权限
-		if (null != groupIds) {
-			String[] groupIdsArr = groupIds.split(",");
-			for (String groupIdsTemp : groupIdsArr) {
-				Group group = Group.dao.cacheGet(groupIdsTemp);
-				String roleIdsStr = group.getStr(Group.column_roleids);
-				if (null == roleIdsStr || roleIdsStr.equals("")) {
-					continue;
-				}
-				String[] roleIdsArr = roleIdsStr.split(",");
-				for (String roleIdsTemp : roleIdsArr) {
-					Role role = Role.dao.cacheGet(roleIdsTemp);
-					String operatorIdsStr = role.getStr(Role.column_operatorids);
-					if (operatorIdsStr.indexOf(operatorIds) != -1) {
+		// 根据分组角色查询权限
+		User user = User.cacheGet(userIds);
+		List<UserGroup> ugList = user.get("ugList");
+		for (UserGroup ug : ugList) {
+			String groupIds = ug.getGroupids();
+			List<Operator> oList = GroupRoleService.cacheGet(groupIds);
+			for (Operator operator : oList) {
+				if(operatorIds.equals(operator.getPKValue())){
 						return true;
 					}
 				}
 			}
-		}
 
 		// 根据岗位查询权限
-		if (null != stationIds) {
-			String[] stationIdsArr = stationIds.split(",");
-			for (String ids : stationIdsArr) {
-				Station station = Station.dao.cacheGet(ids);
-				String operatorIdsStr = station.getStr(Station.column_operatorids);
-				if (null == operatorIdsStr || operatorIdsStr.equals("")) {
-					continue;
-				}
-				if (operatorIdsStr.indexOf(operatorIds) != -1) {
+		String stationIds = user.getStationids();
+		List<Operator> oList = StationOperatorService.cacheGet(stationIds);
+		for (Operator operator : oList) {
+			if(operatorIds.equals(operator.getPKValue())){
 					return true;
 				}
 			}
-		}
 
 		return false;
 	}
@@ -360,11 +344,7 @@ public class AuthInterceptor implements Interceptor {
 				}
 				
 				// 返回用户数据
-				Object userObj = User.dao.cacheGet(userIds);
-				if (null != userObj) {
-					User user = (User) userObj;
-					return user;
-				}
+				return User.cacheGet(userIds);
 			}
 		}
 
@@ -420,18 +400,22 @@ public class AuthInterceptor implements Interceptor {
 	/**
 	 * 获取验证码
 	 * @param request
+	 * @param response
 	 * @return
 	 */
 	public static String getAuthCode(HttpServletRequest request, HttpServletResponse response){
 		// 1.获取cookie加密数据
 		String authCode = ToolWeb.getCookieValueByName(request, ConstantWebContext.request_authCode);
+		
 		// 2.获取验证码后清除客户端验证码信息
-		setAuthCode(response, ""); 
+		AuthInterceptor.setAuthCode(response, ""); 
+
+		// 3.解密数据
 		if (null != authCode && !authCode.equals("")) {
-			// 3.解密数据
 			authCode = ToolIDEA.decrypt(authCode);
 			return authCode;
 		}
+		
 		return null;
 	}
 

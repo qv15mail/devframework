@@ -3,7 +3,7 @@ package com.platform.mvc.role;
 import org.apache.log4j.Logger;
 
 import com.platform.annotation.Table;
-import com.platform.mvc.base.BaseModelCache;
+import com.platform.mvc.base.BaseModel;
 import com.platform.mvc.station.Station;
 import com.platform.plugin.ParamInitPlugin;
 import com.platform.tools.ToolCache;
@@ -13,8 +13,8 @@ import com.platform.tools.ToolCache;
  * @author 董华健
  */
 @SuppressWarnings("unused")
-@Table(tableName = "pt_role")
-public class Role extends BaseModelCache<Role> {
+@Table(tableName = Role.table_name)
+public class Role extends BaseModel<Role> {
 
 	private static final long serialVersionUID = 6761767368352810428L;
 
@@ -22,6 +22,11 @@ public class Role extends BaseModelCache<Role> {
 	
 	public static final Role dao = new Role();
 
+	/**
+	 * 表名称
+	 */
+	public static final String table_name = "pt_role";
+	
 	/**
 	 * 字段描述：主键 
 	 * 字段类型：character varying  长度：32
@@ -47,29 +52,11 @@ public class Role extends BaseModelCache<Role> {
 	public static final String column_names = "names";
 	
 	/**
-	 * 字段描述：拥有的功能ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_operatorids = "operatorids";
-	
-	/**
-	 * 字段描述：拥有的功能模块ids 
-	 * 字段类型：text  长度：null
-	 */
-	public static final String column_moduleids = "moduleids";
-	
-	/**
 	 * 字段描述：编号 
 	 * 字段类型：character varying  长度：50
 	 */
 	public static final String column_numbers = "numbers";
 	
-	/**
-	 * sqlId : platform.role.paging
-	 * 描述：查询所有角色
-	 */
-	public static final String sqlId_paging = "platform.role.paging";
-
 	/**
 	 * sqlId : platform.role.noCheckedFilter
 	 * 描述：
@@ -104,8 +91,6 @@ public class Role extends BaseModelCache<Role> {
 	private Long version;
 	private String description;
 	private String names;
-	private String operatorids;
-	private String moduleids;
 	private String numbers;
 	
 	public void setIds(String ids){
@@ -132,51 +117,11 @@ public class Role extends BaseModelCache<Role> {
 	public String getNames() {
 		return get(column_names);
 	}
-	public void setOperatorids(String operatorids){
-		set(column_operatorids, operatorids);
-	}
-	public String getOperatorids() {
-		return get(column_operatorids);
-	}
-	public void setModuleids(String moduleids){
-		set(column_moduleids, moduleids);
-	}
-	public String getModuleids() {
-		return get(column_moduleids);
-	}
 	public void setNumbers(String numbers){
 		set(column_numbers, numbers);
 	}
 	public String getNumbers() {
 		return get(column_numbers);
-	}
-	
-	/**
-	 * 添加或者更新缓存
-	 */
-	public void cacheAdd(String ids){
-		ToolCache.set(ParamInitPlugin.cacheStart_role + ids, Role.dao.findById(ids));
-	}
-
-	/**
-	 * 删除缓存
-	 */
-	public void cacheRemove(String ids){
-		ToolCache.remove(ParamInitPlugin.cacheStart_role + ids);
-	}
-
-	/**
-	 * 获取缓存
-	 * @param key
-	 * @return
-	 */
-	public Role cacheGet(String key){
-		Role role = ToolCache.get(ParamInitPlugin.cacheStart_role + key);
-		if(role == null){
-			role = Role.dao.findById(ids);
-			cacheAdd(ids);
-		}
-		return role;
 	}
 	
 }

@@ -320,14 +320,6 @@ public class BaseService {
 	}
 
 	/**
-	 * 行级：过滤
-	 * @param formSqlSb
-	 */
-	public void rowFilter(StringBuilder formSqlSb){
-		
-	}
-
-	/**
 	 * 发送邮件对象
 	 * @param sendType 发送邮件的类型：text 、html
 	 * @param to	接收者

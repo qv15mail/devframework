@@ -2,35 +2,27 @@ package com.platform.mvc.group;
 
 import com.jfinal.aop.Before;
 import com.platform.annotation.Controller;
-import com.platform.constant.ConstantInit;
 import com.platform.mvc.base.BaseController;
 import com.platform.mvc.base.BaseModel;
 import org.apache.log4j.Logger;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * 人员分组管理
  * @author 董华健
  */
 @SuppressWarnings("unused")
-@Controller(controllerKey = "/jf/platform/group")
+@Controller("/jf/platform/group")
 public class GroupController extends BaseController {
 
 	private static Logger log = Logger.getLogger(GroupController.class);
 	
 	private GroupService groupService;
 	
-	private List<Group> noCheckedList; // 用户不在的组
-	private List<Group> checkedList; // 用户所在的组
-	private String roleIds; // 组拥有的角色
-	
 	/**
 	 * 分组管理列表
 	 */
 	public void index() {
-		paging(ConstantInit.db_dataSource_main, splitPage, BaseModel.sqlId_splitPageSelect, Group.sqlId_splitPageFrom);
+		paging(splitPage, BaseModel.sqlId_splitPageSelect, Group.sqlId_splitPageFrom);
 		render("/platform/group/list.html");
 	}
 	
@@ -68,24 +60,6 @@ public class GroupController extends BaseController {
 		redirect("/jf/platform/group");
 	}
 
-	/**
-	 * 人员分组弹出框
-	 */
-	@SuppressWarnings("unchecked")
-	public void select(){
-		Map<String,Object> map = groupService.select(ids);
-		noCheckedList = (List<Group>) map.get("noCheckedList");
-		checkedList = (List<Group>) map.get("checkedList");
-		render("/platform/group/select.html");
-	}
-	
-	/**
-	 * 设置分组对应的角色
-	 */
-	public void setRole(){
-		groupService.setRole(ids, roleIds);
-		renderText(ids);
-	}
 }
 
 

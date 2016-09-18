@@ -1,24 +1,17 @@
 package com.platform.mvc.base;
 
-import java.lang.reflect.Field;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Table;
 import com.jfinal.plugin.activerecord.TableMapping;
 import com.platform.constant.ConstantRender;
 import com.platform.tools.ToolRandoms;
 import com.platform.tools.ToolSqlXml;
-
 import oracle.sql.TIMESTAMP;
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.Field;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Model基础类
@@ -81,7 +74,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param sqlId
      * @return
      */
-	protected String getSql(String sqlId){
+	protected static String getSql(String sqlId){
 		return ToolSqlXml.getSql(sqlId);
 	}
 	
@@ -91,7 +84,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param param
      * @return
      */
-	protected String getSqlByBeetl(String sqlId, Map<String, Object> param){
+	protected static String getSqlByBeetl(String sqlId, Map<String, Object> param){
     	return ToolSqlXml.getSql(sqlId, param, ConstantRender.sql_renderType_beetl);
     }
     
@@ -102,7 +95,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param list 用于接收预处理的值
      * @return
      */
-	protected String getSqlByBeetl(String sqlId, Map<String, Object> param, LinkedList<Object> list){
+	protected static String getSqlByBeetl(String sqlId, Map<String, Object> param, LinkedList<Object> list){
     	return ToolSqlXml.getSql(sqlId, param, ConstantRender.sql_renderType_beetl, list);
     }
 
@@ -112,7 +105,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param param
      * @return
      */
-	protected String getSqlByFreeMarker(String sqlId, Map<String, Object> param){
+	protected static String getSqlByFreeMarker(String sqlId, Map<String, Object> param){
     	return ToolSqlXml.getSql(sqlId, param, ConstantRender.sql_renderType_freeMarker);
     }
     
@@ -123,7 +116,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param list 用于接收预处理的值
      * @return
      */
-	protected String getSqlByFreeMarker(String sqlId, Map<String, Object> param, LinkedList<Object> list){
+	protected static String getSqlByFreeMarker(String sqlId, Map<String, Object> param, LinkedList<Object> list){
     	return ToolSqlXml.getSql(sqlId, param, ConstantRender.sql_renderType_freeMarker, list);
     }
 
@@ -133,7 +126,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param param
      * @return
      */
-	protected String getSqlByVelocity(String sqlId, Map<String, Object> param){
+	protected static String getSqlByVelocity(String sqlId, Map<String, Object> param){
     	return ToolSqlXml.getSql(sqlId, param, ConstantRender.sql_renderType_velocity);
     }
     
@@ -144,7 +137,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
      * @param list 用于接收预处理的值
      * @return
      */
-	protected String getSqlByVelocity(String sqlId, Map<String, Object> param, LinkedList<Object> list){
+	protected static String getSqlByVelocity(String sqlId, Map<String, Object> param, LinkedList<Object> list){
     	return ToolSqlXml.getSql(sqlId, param, ConstantRender.sql_renderType_velocity, list);
     }
 	
@@ -243,6 +236,21 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
 	/**
 	 * 重写save方法
 	 */
+	public boolean save(String pkIds) {
+		String[] pkArr = getTable().getPrimaryKey();
+		
+		this.set(pkArr[0], pkIds); // 设置主键值
+		
+		if(getTable().hasColumnLabel(column_version)){ // 是否需要乐观锁控制
+			this.set(column_version, Long.valueOf(0)); // 初始化乐观锁版本号
+		}
+		
+		return super.save();
+	}
+
+	/**
+	 * 重写save方法
+	 */
 	public boolean save(Map<String, Object> pkMap) {
 		Set<String> pkSet = pkMap.keySet();
 		for (String pk : pkSet) {
@@ -267,12 +275,7 @@ public abstract class BaseModel<M extends Model<M>> extends Model<M> {
 		if(hasVersion){// 是否需要乐观锁控制，表是否有version字段
 			Set<String> modifyFlag = null;
 			try {
-				Field field = null;
-				if(this.getClass().getSuperclass().getName().endsWith("BaseModelCache")){
-					field = this.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("modifyFlag");
-				}else{
-					field = this.getClass().getSuperclass().getSuperclass().getDeclaredField("modifyFlag");
-				}
+				Field field = this.getClass().getSuperclass().getSuperclass().getDeclaredField("modifyFlag");
 				field.setAccessible(true);
 				Object object = field.get(this);
 				if(null != object){
